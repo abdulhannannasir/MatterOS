@@ -1,0 +1,6 @@
+{
+  "name": "MATTEROS",
+  "description": "AI-powered legal matter intelligence and document analysis workspace for lawyers and law firms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,299 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isDocOwner(docData) {
+      return isSignedIn() && (
+        docData.ownerId == request.auth.uid ||
+        docData.leadAttorneyId == request.auth.uid ||
+        (docData.assignedUserIds is list && request.auth.uid in docData.assignedUserIds)
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) &&
+        request.resource.data.keys().hasAll(['id', 'email']) &&
+        request.resource.data.id == userId &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() <= 200;
+      allow update: if isOwner(userId) &&
+        request.resource.data.id == userId &&
+        request.resource.data.email == resource.data.email;
+      allow delete: if false;
+    }
+
+    // --- Organizations Collection ---
+    match /organizations/{orgId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() <= 200;
+      allow update: if isSignedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        request.resource.data.ownerId == resource.data.ownerId
+      );
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // --- Organization Members Collection ---
+    match /organizationMembers/{memberId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // --- Organization Invitations Collection ---
+    match /organizationInvitations/{invitationId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.email is string &&
+        request.resource.data.role is string;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // --- Audit Logs Collection (Immutable) ---
+    match /auditLogs/{logId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.userId is string &&
+        request.resource.data.action is string &&
+        request.resource.data.timestamp is string;
+      allow update, delete: if false; // Audit logs are strictly immutable for regulatory compliance
+    }
+
+    // --- Notifications Collection ---
+    match /notifications/{notificationId} {
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // --- Matters Collection ---
+    match /matters/{matterId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterName is string &&
+        request.resource.data.matterName.size() <= 300 &&
+        request.resource.data.matterNumber is string &&
+        request.resource.data.matterNumber.size() <= 100 &&
+        request.resource.data.client is string &&
+        request.resource.data.client.size() <= 300;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Documents Collection ---
+    match /documents/{documentId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.filename is string &&
+        request.resource.data.filename.size() <= 300;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Document Analyses Collection ---
+    match /documentAnalyses/{analysisId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.documentId is string;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Timeline Events Collection ---
+    match /timelineEvents/{eventId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.event is string &&
+        request.resource.data.event.size() <= 400;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Issues Collection ---
+    match /issues/{issueId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() <= 400;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Evidence Collection ---
+    match /evidence/{evidenceId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() <= 400;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Deadlines Collection ---
+    match /deadlines/{deadlineId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() <= 400;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Activities Collection ---
+    match /activities/{activityId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.action is string;
+      allow update: if false; // Audit logs are immutable
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- AI Conversations Collection ---
+    match /aiConversations/{conversationId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Matter Relationships Collection ---
+    match /matterRelationships/{relationshipId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.relationshipType is string;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Matter Facts Collection ---
+    match /matterFacts/{factId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.fact is string &&
+        request.resource.data.fact.size() <= 2000;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Matter Contradictions Collection ---
+    match /matterContradictions/{contradictionId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.title is string;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Matter Missing Information Collection ---
+    match /matterMissingInformation/{missingInfoId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.item is string;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Matter AI Summaries Collection ---
+    match /matterSummaries/{summaryId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // --- Tasks Collection ---
+    match /tasks/{taskId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() <= 400;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // --- Notes Collection ---
+    match /notes/{noteId} {
+      allow get: if isDocOwner(resource.data);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.matterId is string &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() <= 400;
+      allow update: if isDocOwner(resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+  }
+}

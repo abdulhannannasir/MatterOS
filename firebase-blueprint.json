@@ -1,0 +1,466 @@
+{
+  "entities": {
+    "Organization": {
+      "title": "Organization",
+      "description": "Law firm or legal organization workspace",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "ownerId"]
+    },
+    "OrganizationMember": {
+      "title": "OrganizationMember",
+      "description": "User membership and assigned role within an organization",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "organizationId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userName": { "type": "string" },
+        "role": { "type": "string" },
+        "status": { "type": "string" },
+        "joinedAt": { "type": "string" }
+      },
+      "required": ["id", "organizationId", "userId", "role"]
+    },
+    "OrganizationInvitation": {
+      "title": "OrganizationInvitation",
+      "description": "Pending invitation to join a law firm organization",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "organizationId": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "invitedBy": { "type": "string" },
+        "status": { "type": "string" },
+        "token": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "expiresAt": { "type": "string" }
+      },
+      "required": ["id", "organizationId", "email", "role", "status"]
+    },
+    "AuditLogEntry": {
+      "title": "AuditLogEntry",
+      "description": "Immutable security and operational audit trail entry for law firm compliance",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "organizationId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "entityType": { "type": "string" },
+        "entityId": { "type": "string" },
+        "matterId": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "organizationId", "userId", "action", "timestamp"]
+    },
+    "NotificationItem": {
+      "title": "NotificationItem",
+      "description": "Matter assignment, deadline, or review notification for team members",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "organizationId": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "organizationId", "userId", "title", "read"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile representation in the firm",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "firmName": { "type": "string" },
+        "role": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "email"]
+    },
+    "Matter": {
+      "title": "Matter",
+      "description": "Legal matter record managed by legal counsel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "matterName": { "type": "string" },
+        "matterNumber": { "type": "string" },
+        "client": { "type": "string" },
+        "opposingParty": { "type": "string" },
+        "matterType": { "type": "string" },
+        "jurisdiction": { "type": "string" },
+        "court": { "type": "string" },
+        "caseNumber": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string" },
+        "priority": { "type": "string" },
+        "archived": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "ownerId", "matterName", "matterNumber", "client", "status"]
+    },
+    "DocumentItem": {
+      "title": "DocumentItem",
+      "description": "Legal document uploaded to a matter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "filename": { "type": "string" },
+        "fileType": { "type": "string" },
+        "category": { "type": "string" },
+        "fileSize": { "type": "number" },
+        "uploadDate": { "type": "string" },
+        "uploadedBy": { "type": "string" },
+        "processingStatus": { "type": "string" },
+        "aiAnalysisStatus": { "type": "string" },
+        "contentSummary": { "type": "string" },
+        "extractedText": { "type": "string" },
+        "fileData": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "filename", "category"]
+    },
+    "DocumentAnalysis": {
+      "title": "DocumentAnalysis",
+      "description": "Structured AI intelligence extracted from a document",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "documentId": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "documentSummary": { "type": "string" },
+        "documentType": { "type": "string" },
+        "modelUsed": { "type": "string" },
+        "analyzedAt": { "type": "string" }
+      },
+      "required": ["id", "documentId", "matterId", "ownerId"]
+    },
+    "TimelineEvent": {
+      "title": "TimelineEvent",
+      "description": "Chronological factual event in the matter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "date": { "type": "string" },
+        "event": { "type": "string" },
+        "description": { "type": "string" },
+        "sourceDocument": { "type": "string" },
+        "sourcePage": { "type": "string" },
+        "confidence": { "type": "string" },
+        "isAiGenerated": { "type": "boolean" },
+        "lawyerVerified": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "date", "event"]
+    },
+    "Issue": {
+      "title": "Issue",
+      "description": "Legal or factual dispute issue in the matter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "sourceDocument": { "type": "string" },
+        "status": { "type": "string" },
+        "lawyerNotes": { "type": "string" },
+        "isAiSuggested": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "title", "status"]
+    },
+    "Evidence": {
+      "title": "Evidence",
+      "description": "Evidence item indexed for a matter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "sourceDocument": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "name", "type"]
+    },
+    "Deadline": {
+      "title": "Deadline",
+      "description": "Filing or statutory deadline in the matter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "title": { "type": "string" },
+        "date": { "type": "string" },
+        "description": { "type": "string" },
+        "source": { "type": "string" },
+        "status": { "type": "string" },
+        "priority": { "type": "string" },
+        "isAiSuggested": { "type": "boolean" },
+        "isLawyerConfirmed": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "title", "date", "status"]
+    },
+    "Activity": {
+      "title": "Activity",
+      "description": "Audit and operational activity trail",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "ownerId", "action", "timestamp"]
+    },
+    "AiConversation": {
+      "title": "AiConversation",
+      "description": "AI Workspace chat session for a matter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "title": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId"]
+    },
+    "MatterRelationship": {
+      "title": "MatterRelationship",
+      "description": "Cross-document relationship in a legal matter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "sourceDocName": { "type": "string" },
+        "targetDocName": { "type": "string" },
+        "relationshipType": { "type": "string" },
+        "description": { "type": "string" },
+        "isAiDetected": { "type": "boolean" },
+        "isLawyerConfirmed": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "sourceDocName", "targetDocName", "relationshipType"]
+    },
+    "MatterFact": {
+      "title": "MatterFact",
+      "description": "Structured factual statement or claim extracted or verified across matter files",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "fact": { "type": "string" },
+        "sourceDocument": { "type": "string" },
+        "confidence": { "type": "string" },
+        "extractionType": { "type": "string" },
+        "factSourceType": { "type": "string" },
+        "isLawyerConfirmed": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "fact", "sourceDocument", "extractionType"]
+    },
+    "MatterContradiction": {
+      "title": "MatterContradiction",
+      "description": "Potential factual or date contradiction flagged across documents for lawyer review",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "title": { "type": "string" },
+        "contradictionCategory": { "type": "string" },
+        "whyFlagged": { "type": "string" },
+        "status": { "type": "string" },
+        "isAiDetected": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "title", "whyFlagged", "status"]
+    },
+    "MatterMissingInformation": {
+      "title": "MatterMissingInformation",
+      "description": "Missing referenced schedules, exhibits, or notices not found in matter",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "item": { "type": "string" },
+        "referencedByDocument": { "type": "string" },
+        "explanation": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "item", "referencedByDocument", "explanation", "status"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Operational matter task with lawyer confirmation and priority tracking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "assignedTo": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "priority": { "type": "string" },
+        "status": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "relatedIssue": { "type": "string" },
+        "relatedDocument": { "type": "string" },
+        "relatedDeadline": { "type": "string" },
+        "isAiSuggested": { "type": "boolean" },
+        "confirmedByLawyer": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "title", "status", "priority", "createdBy"]
+    },
+    "MatterNote": {
+      "title": "MatterNote",
+      "description": "Matter-specific legal notes kept strictly separate from AI facts unless confirmed",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "matterId": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "author": { "type": "string" },
+        "relatedIssue": { "type": "string" },
+        "relatedDocument": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "matterId", "ownerId", "title", "content", "author"]
+    }
+  },
+  "firestore": {
+    "/organizations/{organizationId}": {
+      "schema": "Organization",
+      "description": "Stores law firm organizations and multi-tenant settings"
+    },
+    "/organizationMembers/{memberId}": {
+      "schema": "OrganizationMember",
+      "description": "Stores law firm memberships, user roles, and access assignments"
+    },
+    "/organizationInvitations/{invitationId}": {
+      "schema": "OrganizationInvitation",
+      "description": "Stores firm member invitations"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLogEntry",
+      "description": "Stores immutable law firm audit events and compliance logs"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "NotificationItem",
+      "description": "Stores user notifications for matter deadlines and assignments"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Stores user profiles with owner-restricted access"
+    },
+    "/matters/{matterId}": {
+      "schema": "Matter",
+      "description": "Stores legal matters belonging to a user/firm"
+    },
+    "/documents/{documentId}": {
+      "schema": "DocumentItem",
+      "description": "Stores legal documents linked to matters"
+    },
+    "/documentAnalyses/{analysisId}": {
+      "schema": "DocumentAnalysis",
+      "description": "Stores structured intelligence outputs from Gemini"
+    },
+    "/timelineEvents/{eventId}": {
+      "schema": "TimelineEvent",
+      "description": "Stores chronological timeline milestones"
+    },
+    "/issues/{issueId}": {
+      "schema": "Issue",
+      "description": "Stores legal/factual issues for matters"
+    },
+    "/evidence/{evidenceId}": {
+      "schema": "Evidence",
+      "description": "Stores indexed evidence records"
+    },
+    "/deadlines/{deadlineId}": {
+      "schema": "Deadline",
+      "description": "Stores calendar deadlines and statutory cutoffs"
+    },
+    "/activities/{activityId}": {
+      "schema": "Activity",
+      "description": "Stores audit log activities"
+    },
+    "/aiConversations/{conversationId}": {
+      "schema": "AiConversation",
+      "description": "Stores AI workspace conversation history"
+    },
+    "/matterRelationships/{relationshipId}": {
+      "schema": "MatterRelationship",
+      "description": "Stores cross-document relationships"
+    },
+    "/matterFacts/{factId}": {
+      "schema": "MatterFact",
+      "description": "Stores structured facts with source tracking"
+    },
+    "/matterContradictions/{contradictionId}": {
+      "schema": "MatterContradiction",
+      "description": "Stores potential cross-document contradictions"
+    },
+    "/matterMissingInformation/{missingInfoId}": {
+      "schema": "MatterMissingInformation",
+      "description": "Stores detected missing references"
+    },
+    "/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Stores matter tasks with assignment, status, and lawyer approval"
+    },
+    "/notes/{noteId}": {
+      "schema": "MatterNote",
+      "description": "Stores attorney matter notes kept separate from AI facts"
+    }
+  }
+}
